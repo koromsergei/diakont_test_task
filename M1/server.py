@@ -1,15 +1,5 @@
 import socket
 
-# TODO: добавить задание порта и адреса в файл
-HOST = "127.0.0.1"
-PORT = 5000
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((HOST, PORT))
-server.listen(1)
-
-print(f"Server listening on {HOST}:{PORT}")
-
 
 def recive_all(conn, length):
     data = b""
@@ -22,11 +12,21 @@ def recive_all(conn, length):
     return data
 
 
+def run_server(on_message):
+    # TODO: добавить задание порта и адреса в файл
+    HOST = "127.0.0.1"
+    PORT = 5000
 
-if __name__ == "__main__":
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((HOST, PORT))
+    server.listen(1)
+
+    print(f"Server listening on {HOST}:{PORT}")
     while True:
+        conn = ''
         try:
             conn, addr = server.accept()
+            # TODO: добавить изменение состояния в слое
             print(f"Connected: {addr}")
 
             data_length = conn.recv(1)[0]
@@ -34,7 +34,7 @@ if __name__ == "__main__":
             data_type = data[1]
             data_number = data[2:4]
             data_message = data[3:]
-            
+
 
             if data:
                 text = data.decode("utf-8")
@@ -47,3 +47,10 @@ if __name__ == "__main__":
         finally:
             if conn:
                 conn.close()
+
+
+
+
+if __name__ == "__main__":
+    on_message = ''
+    run_server(on_message)
