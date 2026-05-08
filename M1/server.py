@@ -12,7 +12,7 @@ def recive_all(conn, length):
     return data
 
 
-def run_server(on_message):
+def run_server(on_respond=None, on_pack_id=None, on_closed=None):
     # TODO: добавить задание порта и адреса в файл
     HOST = "127.0.0.1"
     PORT = 5000
@@ -26,7 +26,9 @@ def run_server(on_message):
         conn = ''
         try:
             conn, addr = server.accept()
-            # TODO: добавить изменение состояния в слое
+            if on_respond is not None:
+                on_respond(True)
+                on_pack_id(0)
             print(f"Connected: {addr}")
 
             data_length = conn.recv(1)[0]
@@ -36,21 +38,24 @@ def run_server(on_message):
             data_message = data[3:]
 
 
-            if data:
-                text = data.decode("utf-8")
-                print("Received:", text)
-                conn.sendall(f"ACK: {text}".encode("utf-8"))
+            if data_message and on_pack_id is not None:
+                if data_message == b'0x0000':
+                    on_pack_id(data_number)
+                    conn.sendall(recive_all)
+                if data_message == b'0xFFFF':
+                    on_closed(True)
 
         except Exception as e:
             print(f"Error occurs: {e}")
             continue
         finally:
             if conn:
+                if on_respond is not None:
+                    on_respond(False)
                 conn.close()
 
 
 
 
 if __name__ == "__main__":
-    on_message = ''
-    run_server(on_message)
+    run_server()
