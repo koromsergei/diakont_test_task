@@ -1,7 +1,7 @@
 import socket
+from diakont_test_task.common.config import HOST, PORT
 
-
-def recive_all(conn, length):
+def receive_all(conn, length):
     data = b""
     while len(data) < length:
         chunk = conn.recv(length - len(data))
@@ -12,10 +12,8 @@ def recive_all(conn, length):
     return data
 
 
-def run_server(on_respond=None, on_pack_id=None, on_closed=None):
-    # TODO: добавить задание порта и адреса в файл
-    HOST = "127.0.0.1"
-    PORT = 5000
+def run_server(on_respond=None, on_pack_id=None, on_closed=None, send_respond=None):
+
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
@@ -23,7 +21,7 @@ def run_server(on_respond=None, on_pack_id=None, on_closed=None):
 
     print(f"Server listening on {HOST}:{PORT}")
     while True:
-        conn = ''
+        conn = None
         try:
             conn, addr = server.accept()
             if on_respond is not None:
@@ -32,7 +30,7 @@ def run_server(on_respond=None, on_pack_id=None, on_closed=None):
             print(f"Connected: {addr}")
 
             data_length = conn.recv(1)[0]
-            data = recive_all(conn, data_length)
+            data = receive_all(conn, data_length)
             data_type = data[1]
             data_number = data[2:4]
             data_message = data[3:]
@@ -41,7 +39,8 @@ def run_server(on_respond=None, on_pack_id=None, on_closed=None):
             if data_message and on_pack_id is not None:
                 if data_message == b'0x0000':
                     on_pack_id(data_number)
-                    conn.sendall(recive_all)
+                    if send_respond():
+                        conn.sendall(receive_all)
                 if data_message == b'0xFFFF':
                     on_closed(True)
 
