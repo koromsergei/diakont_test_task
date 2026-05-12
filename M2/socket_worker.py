@@ -48,8 +48,10 @@ def connect_to_socket(on_pack_id=None, is_connected=None):
                         
                         if not data_message:
                             continue
-                        if not stop_sending_event.is_set():
-                            ser.write(data_message)
+                        if  stop_sending_event.is_set():
+                            ser.close()
+                            return
+                        ser.write(data_message)
                         
 
         except Exception as e:
