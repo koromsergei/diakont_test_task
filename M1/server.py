@@ -32,16 +32,16 @@ def run_server(on_respond=None, on_pack_id=None, on_closed=None, send_respond=No
             data_length = conn.recv(1)[0]
             data = receive_all(conn, data_length)
             data_type = data[1]
-            data_number = data[2:4]
+            data_number = data[1:3]
             data_message = data[3:]
 
 
             if data_message and on_pack_id is not None:
-                if data_message == b'0x0000':
+                if data_message == b'\x00\x00':
                     on_pack_id(data_number)
                     if send_respond():
                         conn.sendall(receive_all)
-                if data_message == b'0xFFFF':
+                if data_message == b'\xFF\xFF':
                     on_closed(True)
 
         except Exception as e:
