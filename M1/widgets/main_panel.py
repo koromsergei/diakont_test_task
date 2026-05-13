@@ -69,7 +69,7 @@ class MainPanel(CommonPanel):
 
     def on_server_pack_id(self, value):
         if value is not None:
-            self.label.setText(value)
+            self.label.setText(str(value))
     
 
     def on_server_closed(self, value):

@@ -2,7 +2,7 @@ import serial
 import threading
 import time
 from common.M.config import HOST, PORT, ATTEMPTS_TO_RECONNECT, \
-    TIME_TO_CONNECT, TIME_TO_RECONNECT, COM_SPEED, COM_TIMEOUT, TIME_TO_RECEIVE_FROM_M1
+    TIME_TO_CONNECT, TIME_TO_RECONNECT, COM_SPEED, COM_TIMEOUT, TIME_TO_RECEIVE_FROM_M1, M2_PORT
 import socket
 from M2.shared_state import stop_sending_event
 
@@ -38,7 +38,7 @@ def connect_to_serial(on_pack_id=None, is_connected=None):
                 print("M2 connected to server.")
 
                 with serial.Serial(
-                                    "COM3", 
+                                    M2_PORT, 
                                     COM_SPEED, 
                                     bytesize=8,
                                     parity=serial.PARITY_NONE,
@@ -72,13 +72,12 @@ def connect_to_serial(on_pack_id=None, is_connected=None):
                         response = sock.recv(1024)
                         
         except socket.timeout:
-            print(f"Сервер M1 не ответил за {TIME_TO_RECEIVE_FROM_M1} секунд")
             stop_sending_event.set()
             send_defauilt(sock)
         
         except Exception as e:
             attempt += 1
-            print(f"Connection failed, attempts left {ATTEMPTS_TO_RECONNECT - attempt}:", e)
+            print(f"M2 connection failed, attempts left {ATTEMPTS_TO_RECONNECT - attempt}:", e)
             time.sleep(TIME_TO_RECONNECT) 
         
         finally:

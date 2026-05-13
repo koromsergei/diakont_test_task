@@ -1,7 +1,7 @@
 import serial
 import time
 from common.M.config import HOST, PORT, ATTEMPTS_TO_RECONNECT, \
-    TIME_TO_CONNECT, TIME_TO_RECONNECT, COM_SPEED, COM_TIMEOUT
+    TIME_TO_CONNECT, TIME_TO_RECONNECT, COM_SPEED, COM_TIMEOUT, M2_PORT
 import socket
 from M2.shared_state import stop_sending_event
 
@@ -23,7 +23,7 @@ def connect_to_socket(is_connected=None):
     while attempt < ATTEMPTS_TO_RECONNECT:
         try:
             with serial.Serial(
-                                "COM3", 
+                                M2_PORT, 
                                 COM_SPEED, 
                                 bytesize=8,
                                 parity=serial.PARITY_NONE,

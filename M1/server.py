@@ -20,6 +20,7 @@ def make_packet(packet_type, packet_number, message):
 
 def run_server(on_respond=None, on_pack_id=None, on_closed=None, send_respond=None):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen(1)
 

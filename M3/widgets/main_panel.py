@@ -36,7 +36,7 @@ class MainPanel(CommonPanel):
         self.label.setText(str(value))
 
     def on_close_requested(self, value):
-        if value:
+        if not value:
             app = QApplication.instance()
             if app is not None:
                 app.quit()
