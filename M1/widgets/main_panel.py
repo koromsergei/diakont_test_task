@@ -14,6 +14,7 @@ class MainPanel(CommonPanel):
     def __init__(self):
         super().__init__() 
         self.checkbox = QCheckBox("respond")
+        self.checkbox.setChecked(True)
         self.timer = QTimer()
         self.timer.timeout.connect(self.close_all)
         self.label = QLabel("Pack_id")

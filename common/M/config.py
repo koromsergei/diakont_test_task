@@ -9,5 +9,5 @@ COM_TIMEOUT = 1
 EXCHANGE_TIME = 10
 TIME_TO_RECEIVE_FROM_M1 = 30
 
-M2_PORT = '/dev/pts/6'
-M3_PORT = '/dev/pts/7'
+M2_PORT = '/dev/pts/5'
+M3_PORT = '/dev/pts/6'
