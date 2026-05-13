@@ -1,1 +1,14 @@
-# diakont_test_task
+# Тестовле задание три приложения
+
+1) Создайте пару вирутальных портов командой sh create_ports.sh
+результат выполнения скрипта (например):
+sh create_ports.sh 
+2026/05/13 13:44:05 socat[2769092] N PTY is /dev/pts/5
+2026/05/13 13:44:05 socat[2769092] N PTY is /dev/pts/6
+
+поместите в перееменные в файл common/M/config.py в переменные 
+
+M2_PORT = '/dev/pts/5'
+M3_PORT = '/dev/pts/6'
+
+2) Запустите приложения командой sh run_all.sh
