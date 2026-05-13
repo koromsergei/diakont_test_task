@@ -1,10 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from diakont_test_task.M3.main_window import MainWindow
+from M3.main_window import MainPanel
 
 app = QApplication(sys.argv)
 
-window = MainWindow()
+window = MainPanel()
 
 window.show()
 app.exec_()

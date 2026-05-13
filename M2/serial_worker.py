@@ -1,10 +1,10 @@
 import serial
 import threading
 import time
-from diakont_test_task.common.config import HOST, PORT, ATTEMPTS_TO_RECONNECT, \
+from common.M.config import HOST, PORT, ATTEMPTS_TO_RECONNECT, \
     TIME_TO_CONNECT, TIME_TO_RECONNECT, COM_SPEED, COM_TIMEOUT, TIME_TO_RECEIVE_FROM_M1
 import socket
-from shared_state import stop_sending_event
+from M2.shared_state import stop_sending_event
 
 
 def receive_all_com(conn, length):
@@ -18,8 +18,14 @@ def receive_all_com(conn, length):
     return data
 
 
+def make_packet(packet_type, packet_number, message):
+    data = bytes([packet_type]) + packet_number + message
+    header = bytes([len(data)])
+    return header + data
+
+
 def send_defauilt(sock):
-    sock.sendall(b'0xffff')
+    sock.sendall(b'\xFF\xFF')
 
 
 def connect_to_serial(on_pack_id=None, is_connected=None):
@@ -49,7 +55,7 @@ def connect_to_serial(on_pack_id=None, is_connected=None):
                         data_length = header[0]  
                         is_connected(True)
                         data = receive_all_com(ser, data_length)
-                        data_type = data[1]
+                        data_type = data[0]
                         data_number = data[1:3]
                         data_message = data[3:]
 
@@ -57,7 +63,12 @@ def connect_to_serial(on_pack_id=None, is_connected=None):
                             on_pack_id(data_number)
 
                         sock.settimeout(TIME_TO_RECEIVE_FROM_M1)
-                        sock.sendall(data_message)
+                        response_packet = make_packet(
+                            packet_type=0x11,
+                            packet_number=data_number,
+                            message=data_message
+                        )
+                        sock.sendall(response_packet)
                         response = sock.recv(1024)
                         
         except socket.timeout:

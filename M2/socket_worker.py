@@ -1,9 +1,9 @@
 import serial
 import time
-from diakont_test_task.common.config import HOST, PORT, ATTEMPTS_TO_RECONNECT, \
+from common.M.config import HOST, PORT, ATTEMPTS_TO_RECONNECT, \
     TIME_TO_CONNECT, TIME_TO_RECONNECT, COM_SPEED, COM_TIMEOUT
 import socket
-from shared_state import stop_sending_event
+from M2.shared_state import stop_sending_event
 
 def receive_all_sock(conn, length):
     data = b""
@@ -18,7 +18,7 @@ def receive_all_sock(conn, length):
 
 
 
-def connect_to_socket(on_pack_id=None, is_connected=None):
+def connect_to_socket(is_connected=None):
     attempt = 0
     while attempt < ATTEMPTS_TO_RECONNECT:
         try:
@@ -32,35 +32,39 @@ def connect_to_socket(on_pack_id=None, is_connected=None):
             ) as ser:
 
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                    sock.bind((HOST, PORT))
-                    sock.listen(1)
+                    sock.settimeout(TIME_TO_CONNECT)
+                    sock.connect((HOST, PORT))
+                    print(f"M2 connected to M1 {HOST}:{PORT}")
+                    if is_connected:
+                        is_connected(True)
 
                     while True:
-                        conn = None
-                        conn, addr = sock.accept()
-                        print(f"M2 connected to server {addr}.")
-                        data_length = conn.recv(1)[0]
-                        is_connected(True)
-                        data = receive_all_sock(conn, data_length)
-                        data_type = data[1]
+                        if stop_sending_event.is_set():
+                            return
+                       
+                        header = sock.recv(1)
+                        if not header:
+                            raise ConnectionError("M1 disconnected")
+                        data_length = header[0]
+                 
+                        data = receive_all_sock(sock, data_length)
+                        data_type = data[0]
                         data_number = data[1:3]
                         data_message = data[3:]
                         
                         if not data_message:
                             continue
-                        if  stop_sending_event.is_set():
-                            ser.close()
-                            return
                         ser.write(data_message)
+                        ser.flush()
                         
 
         except Exception as e:
             attempt += 1
             print(f"Connection failed, attempts left {ATTEMPTS_TO_RECONNECT - attempt}:", e)
             time.sleep(TIME_TO_RECONNECT) 
-        
         finally:
-            is_connected(False)
+            if is_connected:
+                is_connected(False)
 
 if __name__ == "__main__":
     connect_to_socket()

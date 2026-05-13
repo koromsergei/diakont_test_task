@@ -1,26 +1,42 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QCheckBox, QLabel
-from diakont_test_task.common.M.widgets.common_panel import CommonPanel
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QLabel, QApplication
+from common.M.widgets.common_panel import CommonPanel
+
+import threading
+from M3.serial_worker import connect_to_serial
+
 
 class MainPanel(CommonPanel):
+    message_pack_id_received = pyqtSignal(str)
+    message_close_received = pyqtSignal(bool)
+
     def __init__(self):
-        super().__init__() 
-        self.attempt = 0
-        self.sock = None
-        self.ser = serial.Serial(
-                    "COM3", 
-                    COM_SPEED, 
-                    bytesize=8,
-                    parity=serial.PARITY_NONE,
-                    stopbits=serial.STOPBITS_ONE,
-                    timeout=COM_TIMEOUT
+        super().__init__()
+
+        self.label = QLabel("0")
+        self.layout.addWidget(self.label, alignment=Qt.AlignRight)
+
+        self.message_pack_id_received.connect(self.on_server_pack_id)
+        self.message_close_received.connect(self.on_close_requested)
+
+        self.serial_thread = threading.Thread(
+            target=connect_to_serial,
+            args=(self.handle_server_pack_id, self.handle_close),
+            daemon=True
         )
-        QTimer.singleShot(0, self.connect_to_server)
+        self.serial_thread.start()
 
-        self.chechbox = QCheckBox("Exchange")
-        self.chechbox.setEnabled(False)
-        self.lable = QLabel("Pack_id")
+    def handle_server_pack_id(self, value):
+        self.message_pack_id_received.emit(str(value))
 
-        self.layout.addWidget(self.chechbox, alignment=Qt.AlignRight)
-        self.layout.addWidget(self.lable, alignment=Qt.AlignRight)
+    def handle_close(self, value):
+        self.message_close_received.emit(bool(value))
 
+    def on_server_pack_id(self, value):
+        self.label.setText(str(value))
+
+    def on_close_requested(self, value):
+        if value:
+            app = QApplication.instance()
+            if app is not None:
+                app.quit()
